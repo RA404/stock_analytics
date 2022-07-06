@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Stock analytics</title>
+</head>
+<body>
+    <h1>Stock analytics service</h1>
+    <h2>Load historical data</h2>
+    <form action="{% url 'stock:load_data' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit">Load</button>
+    </form>
+    <p>{{ quote.date }} {{quote.time}} {{quote.close}}</p>
+    <a href="{% url 'stock:check_suggestion' 0 %}">Suggestion 0: The price aim to average</a>
+</body>
+</html>
