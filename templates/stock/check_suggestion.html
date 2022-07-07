@@ -9,10 +9,14 @@
 </head>
 <body>
     <h1>Check suggestion</h1>
+    <p>Amount quotes:</p>
     <p>Amount deals:</p>
     <p>Successful deals:</p>
     <p>Unsuccessful deals:</p>
     <p>EoD successful deals:</p>
     <p>EoD unsuccessful deals:</p>
+    {% for deals in pnl %}
+    <p>{{ deals }}</p>
+    {% endfor %}
 </body>
 </html>
