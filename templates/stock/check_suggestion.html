@@ -9,14 +9,10 @@
 </head>
 <body>
     <h1>Check suggestion</h1>
-    <p>Amount quotes:</p>
-    <p>Amount deals:</p>
-    <p>Successful deals:</p>
-    <p>Unsuccessful deals:</p>
-    <p>EoD successful deals:</p>
-    <p>EoD unsuccessful deals:</p>
-    {% for deals in pnl %}
-    <p>{{ deals }}</p>
-    {% endfor %}
+    <p>Amount quotes: {{ count_of_quotes }}</p>
+    <p>Amount deals: {{ amount_of_deals }}</p>
+    <p>Successful deals: {{ successful_count }}</p>
+    <p>Unsuccessful deals: {{ unsuccessful_count }}</p>
+    <p>Fin. result: {{ fin_res }}</p>
 </body>
 </html>

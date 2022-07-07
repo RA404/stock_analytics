@@ -47,7 +47,24 @@ def load_file_to_db(file: IO) -> None:
 def check_suggestion(request: HttpRequest, pk: int) -> HttpResponse:
     suggestion_list = [aim_to_average(), ]
     pnl = suggestion_list[int(pk)]
-    context = {'pnl': pnl}
+    fin_res = sum(pnl)
+    count_of_quotes = StockData.objects.count()
+    amount_of_deals = len(pnl)
+    pnl.sort()
+    unsuccessful_count = 0
+    for i, deal in enumerate(pnl):
+        if deal >= 0:
+            unsuccessful_count = i + 1
+            break
+    successful_count = amount_of_deals - unsuccessful_count
+
+    context = {
+        'fin_res': fin_res,
+        'count_of_quotes': count_of_quotes,
+        'amount_of_deals': amount_of_deals,
+        'unsuccessful_count': unsuccessful_count,
+        'successful_count': successful_count,
+    }
     template = 'stock/check_suggestion.html'
     return render(request, template, context)
 
@@ -71,7 +88,8 @@ def aim_to_average():
     amount_quotes = quotes.count()
 
     for i, quote in enumerate(quotes):
-        print(f'{i} date: {quote.date} open: {quote.open} high: {quote.high} low: {quote.low} close: {quote.close}')
+        # print(f'{i} date: {quote.date} open: {quote.open} high: {quote.high} low: {quote.low} close: {quote.close}')
+        # print(values['price_buy'], values['price_sell'])
 
         amount_free_candles += 1
 
@@ -80,7 +98,8 @@ def aim_to_average():
         elif i == amount_quotes-1:
             # close all
             deal_result = close_position(values, quote.close)
-            pnl.append(deal_result)
+            if deal_result is not None:
+                pnl.append(deal_result)
             # all parameters default
             values = get_default_values()
             amount_free_candles = 0
@@ -89,7 +108,8 @@ def aim_to_average():
         elif current_date != quotes[i + 1].date:
             # close all
             deal_result = close_position(values, quote.close)
-            pnl.append(deal_result)
+            if deal_result is not None:
+                pnl.append(deal_result)
             # all parameters default
             values = get_default_values()
             amount_free_candles = 0
@@ -113,10 +133,10 @@ def aim_to_average():
         # check max and min
         # if changed then
         # free candle start from 0 and update max, min and recalculate avg
-        if quote.high > max_price and quote.low < min_price:
+        if quote.high >= max_price or quote.low <= min_price:
             max_price = quote.high
             min_price = quote.low
-            avg_price = (max_price + min_price) // 2
+            avg_price = (max_price + min_price) / 2
             if amount_free_candles > limit_free_candles:
                 amount_free_candles = 0
 
@@ -140,7 +160,7 @@ def aim_to_average():
                         'take_profit': avg_price,
                         'long_position': True,
                         'short_position': False,
-                        'price_buy': good_price_for['buy'],
+                        'price_buy': good_price_for['price'],
                         'price_sell': 0,
                     }
                 elif good_price_for['sell']:
@@ -150,7 +170,7 @@ def aim_to_average():
                         'long_position': False,
                         'short_position': True,
                         'price_buy': 0,
-                        'price_sell': good_price_for['sell'],
+                        'price_sell': good_price_for['price'],
                     }
 
     return pnl
@@ -192,14 +212,14 @@ def check_sl_and_tp(long, low, high, values):
         # check SL first
         if high >= values['stop_loss']:
             return close_deal(
-                buy=values['price_buy'],
-                sell=values['stop_loss']
+                buy=values['stop_loss'],
+                sell=values['price_sell']
             )
         # check TP
         elif low <= values['take_profit']:
             return close_deal(
-                buy=values['price_buy'],
-                sell=values['take_profit']
+                buy=values['take_profit'],
+                sell=values['price_sell']
             )
         else:
             return None
@@ -211,8 +231,8 @@ def find_price_for_trade(max_price, min_price, avg_price, low, high):
         'buy': False,
         'price': 0.0,
     }
-    sell_level = (max_price + avg_price) // 2
-    buy_level = (min_price + avg_price) // 2
+    sell_level = (max_price + avg_price) / 2
+    buy_level = (min_price + avg_price) / 2
 
     if high > sell_level:
         good_price_for['sell'] = True
