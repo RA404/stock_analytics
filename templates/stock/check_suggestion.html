@@ -14,5 +14,8 @@
     <p>Successful deals: {{ successful_count }}</p>
     <p>Unsuccessful deals: {{ unsuccessful_count }}</p>
     <p>Fin. result: {{ fin_res }}</p>
+    {% for deal in deals %}
+        <p>{{ deal.5 }}: date: {{ deal.0 }}, time: {{ deal.1 }}, result: {{ deal.2 }}, buy: {{ deal.3 }}, sell {{ deal.4 }}</p>
+    {% endfor %}
 </body>
 </html>
