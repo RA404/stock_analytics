@@ -83,11 +83,11 @@ def aim_to_average():
     min_price = 0
     avg_price = 0
 
-    start_date = '2013-12-03'
-    # start_date = '2022-07-08'
-    end_date = '2022-07-10'
+    # start_date = '2013-12-03'
+    start_date = '2021-01-01'
+    end_date = '2022-07-11'
     quotes = StockData.objects.filter(
-        ticket='MOEX.USDRUB_TMS:CETS',
+        ticket='USD000UTSTOM',
         period='1',
         date__range=(start_date, end_date))
     amount_quotes = quotes.count()
@@ -98,6 +98,9 @@ def aim_to_average():
 
         if i == 0:
             current_date = quote.date
+            min_price = quote.low
+            max_price = quote.high
+            avg_price = (max_price + min_price) / 2
         elif i == amount_quotes-1:
             # close all
             deal_result = close_position(values, quote)
@@ -137,11 +140,14 @@ def aim_to_average():
         # if changed then
         # free candle start from 0 and update max, min and recalculate avg
         if quote.high >= max_price or quote.low <= min_price:
-            max_price = quote.high
-            min_price = quote.low
-            avg_price = (max_price + min_price) / 2
             if amount_free_candles > limit_free_candles:
                 amount_free_candles = 0
+        if quote.high >= max_price:
+            max_price = quote.high
+            avg_price = (max_price + min_price) / 2
+        if quote.low <= min_price:
+            min_price = quote.low
+            avg_price = (max_price + min_price) / 2
 
         # check free candles
         if amount_free_candles < limit_free_candles:
@@ -266,11 +272,13 @@ def find_price_for_trade(max_price, min_price, avg_price, low, high):
     sell_level = (max_price + avg_price) / 2
     buy_level = (min_price + avg_price) / 2
 
-    if high > sell_level:
+    if high > sell_level and low < buy_level:
+        return good_price_for
+    elif high > sell_level > low:
         good_price_for['sell'] = True
         good_price_for['price'] = sell_level
         return good_price_for
-    elif low < buy_level:
+    elif low < buy_level < high:
         good_price_for['buy'] = True
         good_price_for['price'] = buy_level
         return good_price_for
