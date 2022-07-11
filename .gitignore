@@ -135,3 +135,5 @@ sent_emails/
 # users media files
 media/
 cache/
+
+db.sqlite3
