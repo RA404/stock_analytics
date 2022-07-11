@@ -97,6 +97,7 @@ def aim_to_average():
         amount_free_candles += 1
 
         if i == 0:
+            # initialize
             current_date = quote.date
             min_price = quote.low
             max_price = quote.high
